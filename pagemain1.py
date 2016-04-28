@@ -8,6 +8,7 @@ import wx
 import wx.grid
 
 import timecheck
+import checktddata
 import mkt
 import dayline
 import dialogover
@@ -18,17 +19,9 @@ import uprealtimetick
 
 import tools_Dialog1
 import tools_Dialog2
-'''import upmkt
-import upsec
-import upfdmt
-import upequ
-import upfund
-import uphkidxopt
+import f10_display
+import f10_with_processbar_final
 
-import dialogmktequd
-import dialogfundnav
-import dialogsecid
-'''
 import time
 todaydate = time.strftime('%Y-%m-%d')
 import MySQLdb
@@ -187,14 +180,19 @@ class MyFramemain ( wx.Frame ):
 			print counttoday
 			if counttoday == 0 :
 				tradetime = timecheck.getyesday(tradetime)
+				cursor.execute("""SELECT distinct(tradeDate) FROM mkt_mktequd where tradeDate=%s
+						""",(tradetime))
+				if cursor.rowcount > 0:
+					break
 			print tradetime
 			i += 1
-
-		app = wx.App()
+		
+		'''app = wx.App()
 		#frame1.Close()
 		frame = dialogover.MyDialogover(parent=None)
 		frame.Show()
-		app.MainLoop()
+		app.MainLoop()'''
+
 
 		cursor.execute("""select ticker,secShortName,openPrice,highestPrice,lowestPrice,preClosePrice,closePrice,turnoverVol,turnoverValue,dealAmount,
 							turnoverRate,negMarketValue,marketValue,PE,PE1,PB,tradeDate
@@ -505,8 +503,41 @@ class MyFramemain ( wx.Frame ):
 		self.m_menutools.AppendSeparator()
 		self.m_menubar1.Append(self.m_menutools, u'工具')
 		
+		'''self.menu4 = wx.Menu()
+		self.child3 = wx.MenuItem(self.menu4,1,u'&个股数据\tF10')
+        self.menu4.AppendItem(child3)
+        self.menu4.AppendSeparator()
+        self.child4 = wx.Menu()
+        self.child4_1=self.child4.Append(-1,u'更新所有')
+        self.child4_2=self.child4.Append(-1,u'更新SZ板块')
+        self.child4_3=self.child4.Append(-1,u'更新SH板块')
+        #注意区别的是，这里用appendmenu而不是appenditem
+        self.menu4.AppendMenu(-1,u'更新个股资料',self.child4)
+		self.m_menubar1.Append(self.menu4,u'微系统')
 		self.SetMenuBar( self.m_menubar1 )
+		'''
+		self.m_menu18 = wx.Menu()
+		self.m_menu18.AppendSeparator()
 		
+		self.m_menuItem942 = wx.MenuItem( self.m_menu18, wx.ID_ANY, u"个股数据\tF10", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_menu18.AppendItem( self.m_menuItem942 )
+		
+		self.m_menu17 = wx.Menu()
+		self.m_menuItem952 = wx.MenuItem( self.m_menu17, wx.ID_ANY, u"更新所有", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_menu17.AppendItem( self.m_menuItem952 )
+		
+		self.m_menuItem962 = wx.MenuItem( self.m_menu17, wx.ID_ANY, u"更新SZ板块", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_menu17.AppendItem( self.m_menuItem962 )
+		
+		self.m_menuItem972 = wx.MenuItem( self.m_menu17, wx.ID_ANY, u"更新SH板块", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_menu17.AppendItem( self.m_menuItem972 )
+		
+		self.m_menu18.AppendSubMenu( self.m_menu17, u"更新个股资料" )
+		
+		self.m_menubar1.Append( self.m_menu18, u"微系统" ) 
+
+		self.SetMenuBar( self.m_menubar1 )
+
 		bSizer6 = wx.BoxSizer( wx.VERTICAL )
 		
 		self.m_panel2 = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
@@ -571,8 +602,13 @@ class MyFramemain ( wx.Frame ):
 		self.Bind( wx.EVT_MENU, self.OnMktOptd, id = self.m_menuItem89.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnMktIndex, id = self.m_menuItem110.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnMktIdxd, id = self.m_menuItem108.GetId() )
+		self.Bind( wx.EVT_MENU, self.OnTypeIndustry, id = self.m_menuItem106.GetId() )
+		self.Bind( wx.EVT_MENU, self.OnTyeArea, id = self.m_menuItem107.GetId() )
+		self.Bind( wx.EVT_MENU, self.OnTypeConcept, id = self.m_menuItem109.GetId() )
 		self.Bind(wx.EVT_MENU,self.OnChild1,self.child1)
 		self.Bind(wx.EVT_MENU,self.OnChild2,self.child2)
+		self.Bind( wx.EVT_MENU, self.OnChild3, id = self.m_menuItem942.GetId() )
+		self.Bind( wx.EVT_MENU, self.OnChild4_1, id = self.m_menuItem952.GetId() )
 		self.grid.Bind(wx.grid.EVT_GRID_LABEL_LEFT_CLICK,lambda evt,dataSortBigger=dataSortBigger,colLabels=colLabels:self.OnLeftClick(evt,dataSortBigger,colLabels))
 		self.grid.Bind(wx.grid.EVT_GRID_LABEL_RIGHT_CLICK,lambda evt,dataSortSmaller=dataSortSmaller,colLabels=colLabels:self.OnRightClick(evt,dataSortSmaller,colLabels))
 
@@ -591,7 +627,7 @@ class MyFramemain ( wx.Frame ):
 				self.grid.SetTable(LineupTableSmaller(dataSort[i],colLabels))
 				self.grid.AutoSize()
 				self.grid.Refresh()
-	def allsort():
+	def allsort(self,colnum,dataSortBigger1,dataSortSmaller1,data1,colLabels1):
 		for i in range(0,colnum):
 			sortMin(data1,i,dataSortBigger1[i])
 			sortMax(data1,i,dataSortSmaller1[i])
@@ -635,12 +671,44 @@ class MyFramemain ( wx.Frame ):
 
 	##全部A股日行情
 	def OnAshare( self, event ):
+		tradetime = timecheck.getweekday(todaydate,'1530')
+		tradetime = checktddata.check_mktequd(tradetime)
+		cursor.execute( """SELECT mkt_mktequd.ticker,secShortName,openPrice,highestPrice,lowestPrice,preClosePrice,closePrice,turnoverVol,turnoverValue,dealAmount,
+							turnoverRate,negMarketValue,marketValue,PE,PE1,PB,tradeDate
+				 FROM mkt_mktequd,type_ashare
+				 WHERE tradeDate = %s
+				 AND mkt_mktequd.ticker = type_ashare.tickerint
+				 order by ticker asc
+		""",(tradetime))
+
+		datacode = cursor.fetchall()
+		count = cursor.rowcount
+		data1 = [[] for i in range(count)]
+		k=0
+		for datalist in datacode:
+			for j in range(0,17):
+				data1[k].append(datalist[j])
+			k=k+1
+		#for i in range(0,count):
+		#	data1[i][0]= "%06d" % data[i][0]
+		colLabels1 =[u"股票代码",u"股票名称",u"今日开盘价",u"最高价",u"最低价",u"昨日收盘价",u"今日收盘价",u"成交量",u"成交金额",u"成交笔数",
+			u"日换手率",u"流通市值",u"总市值",u"滚动市盈率",u"市盈率",u"市净率",u"交易日期",u"所属行业",u"概念板块"]
+		#colLabels1 = colLabels	
+		colnum = len(data1[0])
+		dataSortBigger1 = [[]for i in range(colnum)]
+		dataSortSmaller1 = [[]for i in range(colnum)]
+		#print dataSortBigger1[0]
+		self.allsort(colnum,dataSortBigger1,dataSortSmaller1,data1,colLabels1)
 		
+	##全部中小板日行情
+	def OnSME( self, event ):
+		tradetime = timecheck.getweekday(todaydate,'1530')
+		tradetime = checktddata.check_mktequd(tradetime)
 		cursor.execute( """SELECT ticker,secShortName,openPrice,highestPrice,lowestPrice,preClosePrice,closePrice,turnoverVol,turnoverValue,dealAmount,
 							turnoverRate,negMarketValue,marketValue,PE,PE1,PB,tradeDate
 				 FROM mkt_mktequd 
-				 WHERE ticker in (SELECT tickerint FROM type_ashare)
-				 AND tradeDate = %s
+				 WHERE tradeDate = %s
+				 AND secID REGEXP '^002'
 				 order by ticker asc
 				 limit 100
 		""",(tradetime))
@@ -650,36 +718,75 @@ class MyFramemain ( wx.Frame ):
 		data1 = [[] for i in range(count)]
 		k=0
 		for datalist in datacode:
-			for j in range(0,14):
+			for j in range(0,17):
 				data1[k].append(datalist[j])
 			k=k+1
-		#colLabels1 =[u"股票代码",u"股票名称",u"今日开盘价",u"最高价",u"最低价",u"昨日收盘价",u"今日收盘价",u"成交量",u"成交金额",u"成交笔数",
-		#	u"日换手率",u"流通市值",u"总市值",u"滚动市盈率",u"市盈率",u"市净率",u"交易日期",u"所属行业",u"概念板块"]
-		colLabels1 = colLabels	
+		colLabels1 =[u"股票代码",u"股票名称",u"今日开盘价",u"最高价",u"最低价",u"昨日收盘价",u"今日收盘价",u"成交量",u"成交金额",u"成交笔数",
+			u"日换手率",u"流通市值",u"总市值",u"滚动市盈率",u"市盈率",u"市净率",u"交易日期",u"所属行业",u"概念板块"]
 		colnum = len(data1[0])
 		dataSortBigger1 = [[]for i in range(colnum)]
 		dataSortSmaller1 = [[]for i in range(colnum)]
 		#print dataSortBigger1[0]
-		for i in range(0,colnum):
-			sortMin(data1,i,dataSortBigger1[i])
-			sortMax(data1,i,dataSortSmaller1[i])
+		self.allsort(colnum,dataSortBigger1,dataSortSmaller1,data1,colLabels1)
 		
-		self.table = TestTable(data1,colLabels1)
-		self.grid.SetTable(self.table, True)
-		self.grid.AutoSize()
-		self.grid.Refresh()
-		self.grid.Bind(wx.grid.EVT_GRID_LABEL_LEFT_CLICK,lambda evt,dataSortBigger1=dataSortBigger1,colLabels1=colLabels1:self.OnLeftClick(evt,dataSortBigger1,colLabels1))
-		self.grid.Bind(wx.grid.EVT_GRID_LABEL_RIGHT_CLICK,lambda evt,dataSortSmaller1=dataSortSmaller1,colLabels1=colLabels1:self.OnRightClick(evt,dataSortSmaller1,colLabels1))
-		
-	
-	def OnSME( self, event ):
-		event.Skip()
-	
+	##全部创业板日行情
 	def OnGEM( self, event ):
-		event.Skip()
+		tradetime = timecheck.getweekday(todaydate,'1530')
+		tradetime = checktddata.check_mktequd(tradetime)
+		cursor.execute( """SELECT ticker,secShortName,openPrice,highestPrice,lowestPrice,preClosePrice,closePrice,turnoverVol,turnoverValue,dealAmount,
+							turnoverRate,negMarketValue,marketValue,PE,PE1,PB,tradeDate
+				 FROM mkt_mktequd 
+				 WHERE tradeDate = %s
+				 AND secID REGEXP '^300'
+				 order by ticker asc
+				 limit 100
+		""",(tradetime))
+
+		datacode = cursor.fetchall()
+		count = cursor.rowcount
+		data1 = [[] for i in range(count)]
+		k=0
+		for datalist in datacode:
+			for j in range(0,17):
+				data1[k].append(datalist[j])
+			k=k+1
+		colLabels1 =[u"股票代码",u"股票名称",u"今日开盘价",u"最高价",u"最低价",u"昨日收盘价",u"今日收盘价",u"成交量",u"成交金额",u"成交笔数",
+			u"日换手率",u"流通市值",u"总市值",u"滚动市盈率",u"市盈率",u"市净率",u"交易日期",u"所属行业",u"概念板块"]
+		colnum = len(data1[0])
+		dataSortBigger1 = [[]for i in range(colnum)]
+		dataSortSmaller1 = [[]for i in range(colnum)]
+		#print dataSortBigger1[0]
+		self.allsort(colnum,dataSortBigger1,dataSortSmaller1,data1,colLabels1)
+		
 	
 	def OnBShare( self, event ):
-		event.Skip()
+		tradetime = timecheck.getweekday(todaydate,'1530')
+		tradetime = checktddata.check_mktequd(tradetime)
+		cursor.execute( """SELECT mkt_mktequd.ticker,secShortName,openPrice,highestPrice,lowestPrice,preClosePrice,closePrice,turnoverVol,turnoverValue,dealAmount,
+							turnoverRate,negMarketValue,marketValue,PE,PE1,PB,tradeDate
+				 FROM mkt_mktequd,type_bshare
+				 WHERE tradeDate = %s
+				 AND mkt_mktequd.ticker = type_bshare.tickerint
+				 order by ticker asc
+		""",(tradetime))
+
+		datacode = cursor.fetchall()
+		count = cursor.rowcount
+		data1 = [[] for i in range(count)]
+		k=0
+		for datalist in datacode:
+			for j in range(0,17):
+				data1[k].append(datalist[j])
+			k=k+1
+		colLabels1 =[u"股票代码",u"股票名称",u"今日开盘价",u"最高价",u"最低价",u"昨日收盘价",u"今日收盘价",u"成交量",u"成交金额",u"成交笔数",
+			u"日换手率",u"流通市值",u"总市值",u"滚动市盈率",u"市盈率",u"市净率",u"交易日期",u"所属行业",u"概念板块"]
+		#colLabels1 = colLabels	
+		colnum = len(data1[0])
+		dataSortBigger1 = [[]for i in range(colnum)]
+		dataSortSmaller1 = [[]for i in range(colnum)]
+		#print dataSortBigger1[0]
+		self.allsort(colnum,dataSortBigger1,dataSortSmaller1,data1,colLabels1)
+		
 	
 	def On3Board( self, event ):
 		event.Skip()
@@ -720,16 +827,7 @@ class MyFramemain ( wx.Frame ):
 		dataSortBigger1 = [[]for i in range(colnum)]
 		dataSortSmaller1 = [[]for i in range(colnum)]
 		#print dataSortBigger1[0]
-		for i in range(0,colnum):
-			sortMin(data1,i,dataSortBigger1[i])
-			sortMax(data1,i,dataSortSmaller1[i])
-		
-		self.table = TestTable(data1,colLabels1)
-		self.grid.SetTable(self.table, True)
-		self.grid.AutoSize()
-		self.grid.Refresh()
-		self.grid.Bind(wx.grid.EVT_GRID_LABEL_LEFT_CLICK,lambda evt,dataSortBigger1=dataSortBigger1,colLabels1=colLabels1:self.OnLeftClick(evt,dataSortBigger1,colLabels1))
-		self.grid.Bind(wx.grid.EVT_GRID_LABEL_RIGHT_CLICK,lambda evt,dataSortSmaller1=dataSortSmaller1,colLabels1=colLabels1:self.OnRightClick(evt,dataSortSmaller1,colLabels1))
+		self.allsort(colnum,dataSortBigger1,dataSortSmaller1,data1,colLabels1)
 		
 
 	##全部债券日行情
@@ -767,17 +865,8 @@ class MyFramemain ( wx.Frame ):
 		dataSortBigger1 = [[]for i in range(colnum)]
 		dataSortSmaller1 = [[]for i in range(colnum)]
 		#print dataSortBigger1[0]
-		for i in range(0,colnum):
-			sortMin(data1,i,dataSortBigger1[i])
-			sortMax(data1,i,dataSortSmaller1[i])
-
-		self.table = TestTable(data1,colLabels1)
-		self.grid.SetTable(self.table, True)
-		self.grid.AutoSize()
-		self.grid.Refresh()
-		self.grid.Bind(wx.grid.EVT_GRID_LABEL_LEFT_CLICK,lambda evt,dataSortBigger1=dataSortBigger1,colLabels1=colLabels1:self.OnLeftClick(evt,dataSortBigger1,colLabels1))
-		self.grid.Bind(wx.grid.EVT_GRID_LABEL_RIGHT_CLICK,lambda evt,dataSortSmaller1=dataSortSmaller1,colLabels1=colLabels1:self.OnRightClick(evt,dataSortSmaller1,colLabels1))
-	
+		self.allsort(colnum,dataSortBigger1,dataSortSmaller1,data1,colLabels1)
+		
 	##全部期货日行情	
 	def OnMktFutd( self, event ):
 		
@@ -821,18 +910,9 @@ class MyFramemain ( wx.Frame ):
 		colnum = len(data1[0])
 		dataSortBigger1 = [[]for i in range(colnum)]
 		dataSortSmaller1 = [[]for i in range(colnum)]
-		print dataSortBigger1[0]
-		for i in range(0,colnum):
-			sortMin(data1,i,dataSortBigger1[i])
-			sortMax(data1,i,dataSortSmaller1[i])
+		#print dataSortBigger1[0]
+		self.allsort(colnum,dataSortBigger1,dataSortSmaller1,data1,colLabels1)
 		
-		self.table = TestTable(data1,colLabels1)
-		self.grid.SetTable(self.table, True)
-		self.grid.AutoSize()
-		self.grid.Refresh()
-		self.grid.Bind(wx.grid.EVT_GRID_LABEL_LEFT_CLICK,lambda evt,dataSortBigger1=dataSortBigger1,colLabels1=colLabels1:self.OnLeftClick(evt,dataSortBigger1,colLabels1))
-		self.grid.Bind(wx.grid.EVT_GRID_LABEL_RIGHT_CLICK,lambda evt,dataSortSmaller1=dataSortSmaller1,colLabels1=colLabels1:self.OnRightClick(evt,dataSortSmaller1,colLabels1))
-	
 	##全部期权日行情
 	def OnMktOptd( self, event ):
 		tradetime = timecheck.getweekday(todaydate,'1600')
@@ -870,18 +950,8 @@ class MyFramemain ( wx.Frame ):
 		colnum = len(data1[0])
 		dataSortBigger1 = [[]for i in range(colnum)]
 		dataSortSmaller1 = [[]for i in range(colnum)]
-		print dataSortBigger1[0]
-		for i in range(0,colnum):
-			sortMin(data1,i,dataSortBigger1[i])
-			sortMax(data1,i,dataSortSmaller1[i])
+		self.allsort(colnum,dataSortBigger1,dataSortSmaller1,data1,colLabels1)
 		
-		self.table = TestTable(data1,colLabels1)
-		self.grid.SetTable(self.table, True)
-		self.grid.AutoSize()
-		self.grid.Refresh()
-		self.grid.Bind(wx.grid.EVT_GRID_LABEL_LEFT_CLICK,lambda evt,dataSortBigger1=dataSortBigger1,colLabels1=colLabels1:self.OnLeftClick(evt,dataSortBigger1,colLabels1))
-		self.grid.Bind(wx.grid.EVT_GRID_LABEL_RIGHT_CLICK,lambda evt,dataSortSmaller1=dataSortSmaller1,colLabels1=colLabels1:self.OnRightClick(evt,dataSortSmaller1,colLabels1))
-	
 	
 	##大盘指数实时行情
 	def OnMktIndex( self, event ):
@@ -923,18 +993,8 @@ class MyFramemain ( wx.Frame ):
 		colnum = len(data1[0])
 		dataSortBigger1 = [[]for i in range(colnum)]
 		dataSortSmaller1 = [[]for i in range(colnum)]
-		print dataSortBigger1[0]
-		for i in range(0,colnum):
-			sortMin(data1,i,dataSortBigger1[i])
-			sortMax(data1,i,dataSortSmaller1[i])
+		self.allsort(colnum,dataSortBigger1,dataSortSmaller1,data1,colLabels1)
 		
-		self.table = TestTable(data1,colLabels1)
-		self.grid.SetTable(self.table, True)
-		self.grid.AutoSize()
-		self.grid.Refresh()
-		self.grid.Bind(wx.grid.EVT_GRID_LABEL_LEFT_CLICK,lambda evt,dataSortBigger1=dataSortBigger1,colLabels1=colLabels1:self.OnLeftClick(evt,dataSortBigger1,colLabels1))
-		self.grid.Bind(wx.grid.EVT_GRID_LABEL_RIGHT_CLICK,lambda evt,dataSortSmaller1=dataSortSmaller1,colLabels1=colLabels1:self.OnRightClick(evt,dataSortSmaller1,colLabels1))
-	
 	##全部指数日行情
 	def OnMktIdxd( self, event ):
 		tradetime = timecheck.getweekday(todaydate,'1600')
@@ -973,54 +1033,72 @@ class MyFramemain ( wx.Frame ):
 		colnum = len(data1[0])
 		dataSortBigger1 = [[]for i in range(colnum)]
 		dataSortSmaller1 = [[]for i in range(colnum)]
-		print dataSortBigger1[0]
-		for i in range(0,colnum):
-			sortMin(data1,i,dataSortBigger1[i])
-			sortMax(data1,i,dataSortSmaller1[i])
-		
-		self.table = TestTable(data1,colLabels1)
-		self.grid.SetTable(self.table, True)
-		self.grid.AutoSize()
-		self.grid.Refresh()
-		self.grid.Bind(wx.grid.EVT_GRID_LABEL_LEFT_CLICK,lambda evt,dataSortBigger1=dataSortBigger1,colLabels1=colLabels1:self.OnLeftClick(evt,dataSortBigger1,colLabels1))
-		self.grid.Bind(wx.grid.EVT_GRID_LABEL_RIGHT_CLICK,lambda evt,dataSortSmaller1=dataSortSmaller1,colLabels1=colLabels1:self.OnRightClick(evt,dataSortSmaller1,colLabels1))
+		self.allsort(colnum,dataSortBigger1,dataSortSmaller1,data1,colLabels1)
 	
+	##行业板块
+	def OnTypeIndustry( self, event ):
+	
+		event.Skip()
+	##地域板块
+	def OnTyeArea( self, event ):
+		event.Skip()
+	
+	##概念板块
+	def OnTypeConcept( self, event ):
+		event.Skip()	
 
+	
 	def OnChild1(self,event):
-                dlg = tools_Dialog1.SubclassDialog1()
-                if dlg.ShowModal() == wx.ID_CANCEL:
-                    print "cancel1"
-                else:
-                    print "OK1"
-                #dlg = wx.SingleChoiceDialog(None,'which formula do you select?',
-                 #                           'formulas manager',['3','2'])
-                #if dlg.ShowModal() == wx.ID_OK:
-                  #  reponse = dlg.GetStringSelection()
-                #这里必须要销毁，否接不能够正常结束
-                dlg.Destroy()
+		app = wx.App()
+		#frame1.Close()
+		dlg = tools_Dialog1.SubclassDialog1()
+		#frame.Show()
+		#app.MainLoop()
+		#dlg = tools_Dialog1.SubclassDialog1()
+		if dlg.ShowModal() == wx.ID_CANCEL:
+			print "cancel1"
+		else:
+			print "OK1"
+		dlg.Destroy()
 
-        def OnChild2(self,event):
-                dlg = tools_Dialog2.SubclassDialog2()
-                if dlg.ShowModal() == wx.ID_CANCEL:
-                    print "cancel2"
-                else:
-                    print "OK2"
-                dlg.Destroy()
+	def OnChild2(self,event):
+		app = wx.App()
+		dlg = tools_Dialog2.SubclassDialog2()
+		if dlg.ShowModal() == wx.ID_CANCEL:
+			print "cancel2"
+		else:
+			print "OK2"
+		dlg.Destroy()
+
+	def OnChild3(self,event):
+		app = wx.App()
+		Subframe = f10_display.TestFrame1()
+		Subframe.Show()
+
+		#日志相关
+		import loggerfun
+		loggerfun.fun3()
+
+	def OnChild4_1(self,event):
+		f10_with_processbar_final.update_f10()
+
 
 	
 class MyApp(wx.App):
 
 	def OnInit(self):
-                #启动提示
-                provider = wx.CreateFileTipProvider('tips.py',0)
-                wx.ShowTip(None,provider,True)
+		#启动提示
+		provider = wx.CreateFileTipProvider('tips.py',0)
+		wx.ShowTip(None,provider,True)
 		self.frame = MyFramemain(parent=None)
 		self.frame.Show(True)
+		
 		#self.SetTopWindow(self.frame)
 		return True
 	def close(self):
 		#self.frame.Close()
 		self.Destroy()
+		#loggerfun.fun0_f()
 
 
 if __name__ == '__main__':
@@ -1028,4 +1106,8 @@ if __name__ == '__main__':
 	#frame = MyFramemain(parent=None)
 	#frame.Show()
 	app = MyApp(0)
+	#日志相关father层次
+	import loggerfun
+	loggerfun.fun0_s()
 	app.MainLoop()	
+	loggerfun.fun0_f()

@@ -30,15 +30,15 @@ for daylineData in allDaylineData:
     x.append(daylineData[0])
     
     #下面分别是ma5,ma10,ma20
-    y1.append(daylineData[10])
-    y2.append(daylineData[11])
-    y3.append(daylineData[12])
+    y1.append(daylineData[8])
+    y2.append(daylineData[9])
+    y3.append(daylineData[10])
 
     #下面分别是volume,v_ma5,v_ma10,v_ma20
-    y4.append(daylineData[7])
-    y5.append(daylineData[13])
-    y6.append(daylineData[14])
-    y7.append(daylineData[15])
+    y4.append(daylineData[5])
+    y5.append(daylineData[11])
+    y6.append(daylineData[12])
+    y7.append(daylineData[13])
     
     #只取一年的数据（还是取所有的数据？由于现在图是可以调整的）
     if (len(x) >= 365):

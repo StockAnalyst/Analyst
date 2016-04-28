@@ -95,10 +95,10 @@ def mktbondd(update):
 def mktfundd(update):
 	global dffundd
 	dffundd = st.MktFundd(tradeDate=update,field='')
-	if dffundd.empty:
+	'''if dffundd.empty:
 		intupdate = int(update)
 		update = str(intupdate - 1)
-		dffundd = st.MktFundd(tradeDate=update,field='')
+		dffundd = st.MktFundd(tradeDate=update,field='')'''
 	#dffundd = st.MktFundd(tradeDate='20151110',field='')
 	dffundd.insert(0,'uploadtime',nowtime)
 	mktfundd_tosql()
@@ -171,6 +171,7 @@ def mktindex(update):
 		cursor.execute("""SELECT distinct(tradeTimehm) FROM mkt_mktindex where tradeDate=%s order by tradeTimehm desc
 						""",(inputtradetime))
 		tradetimesql = cursor.fetchone()
+		print tradetimesql[0]
 		count = cursor.rowcount
 		if count == 0:
 			dfindex = ts.get_index()

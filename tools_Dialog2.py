@@ -61,6 +61,10 @@ class SubclassDialog2(wx.Dialog):#自定义的
         if dialog.ShowModal()==wx.ID_OK:
             print "You want to change its name to %s"%dialog.GetValue()
         dialog.Destroy()
+        
+        #日志相关
+        import loggerfun
+        loggerfun.fun2()
 
     def OnDelete(self,event):
         retCode = wx.MessageBox(u'确定要删除这个模板？此操作是无法恢复的',u'警告框',

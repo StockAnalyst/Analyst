@@ -1,14 +1,21 @@
 #!/usr/bin/env python
 #-*- coding:UTF-8 -*-
-#FILE:公式编辑器
+#FILE:当前版本的公式编辑器(技术指标界面)
 
 import wx
 import wx.grid
 import data
 import draw_Dayline
 
+canshu = ''
+fenlei = 0  #分类取值范围1，2，3对应三种不同界面
+moshi = 0   #模式取值范围0（新建），1（修改）
+item = []
+buffer = ''
+
 class TestFrame(wx.Frame):
-    def __init__(self):
+
+    def __init__(self,canshu,fenlei,moshi,item):
         wx.Frame.__init__(self,None,-1,u'公式编辑器',size=(600,400))
         panel = wx.Panel(self)
 
@@ -16,15 +23,34 @@ class TestFrame(wx.Frame):
         #第一行左半部分
         fnameLabel = wx.StaticText(panel,-1,u'公式名称',pos=(15,15)) 
         fname = wx.TextCtrl(panel,-1,'',pos=(65,15))
-
-        ftypeLabel = wx.StaticText(panel,-1,u'公式类型',pos=(185,15))
-        ftype = wx.ComboBox(panel,-1,u'请选择',(235,15),wx.DefaultSize,data.typeList,wx.CB_DROPDOWN)
-
+        if moshi == 1:
+            fname.SetValue(item[0])
+        
+        if fenlei == 1:
+            ftypeLabel = wx.StaticText(panel,-1,u'公式类型',pos=(185,15))
+            ftype = wx.ComboBox(panel,-1,u'请选择',(235,15),wx.DefaultSize,data.typeList,wx.CB_DROPDOWN)
+            if moshi == 0:
+                ftype.SetValue(canshu)
+            if moshi == 1:
+                ftype.SetValue(item[2])
+        elif fenlei == 2:
+            ftypeLabel = wx.StaticText(panel,-1,u'公式类型',pos=(185,15))
+            ftype = wx.ComboBox(panel,-1,u'请选择',(235,15),wx.DefaultSize,data.typeList1,wx.CB_DROPDOWN)
+            if moshi == 0:
+                ftype.SetValue(canshu)
+            if moshi == 1:
+                ftype.SetValue(item[2])
+        
         fdesLabel = wx.StaticText(panel,-1,u'公式描述',pos=(15,45)) 
         fdes = wx.TextCtrl(panel,-1,'',pos=(65,45))
+        if moshi == 1:
+            fdes.SetValue(item[1])
         
-        fmethodLabel = wx.StaticText(panel,-1,u'画线方法',pos=(185,45))
-        fmethod = wx.ComboBox(panel,-1,u'请选择',(235,45),wx.DefaultSize,data.methodList,wx.CB_DROPDOWN)
+        if fenlei == 1:
+            fmethodLabel = wx.StaticText(panel,-1,u'画线方法',pos=(185,45))
+            fmethod = wx.ComboBox(panel,-1,u'请选择',(235,45),wx.DefaultSize,data.methodList,wx.CB_DROPDOWN)
+            if moshi == 1:
+                fmethod.SetValue(item[3])
                 
         fpassButton = wx.Button(panel,-1,u"密码保护",pos=(15,75))
         self.Bind(wx.EVT_BUTTON,self.OnFpass,fpassButton)
@@ -60,7 +86,11 @@ class TestFrame(wx.Frame):
         
         #第三行
         fmultiIn = wx.TextCtrl(panel,-1,u'公式输入',style=wx.TE_MULTILINE,pos=(15,165),size=(870,200))#?这里是否有必要搞成丰富文本
-        
+        if moshi == 1:
+            f = open(item[5-fenlei])
+            buffer = f.read()
+            fmultiIn.SetValue(buffer)
+            
         #第四行
         fmultiOutBox = wx.ComboBox(panel,-1,u'请选择',(15,385),(100,300),data.outputList,wx.CB_SIMPLE)
         fmultiOut = wx.TextCtrl(panel,-1,u'各类输出',style=wx.TE_MULTILINE,pos=(135,385),size=(735,150))#?这里是否有必要搞成丰富文本
@@ -74,12 +104,16 @@ class TestFrame(wx.Frame):
         firstleftSizer = wx.FlexGridSizer(cols=4,hgap=5,vgap=5)
         firstleftSizer.Add(fnameLabel,0,0)
         firstleftSizer.Add(fname,0,0)
-        firstleftSizer.Add(ftypeLabel,0,0)
-        firstleftSizer.Add(ftype,0,0)
+
+        if fenlei == 1 or fenlei == 2:
+            firstleftSizer.Add(ftypeLabel,0,0)
+            firstleftSizer.Add(ftype,0,0)
         firstleftSizer.Add(fdesLabel,0,0)
         firstleftSizer.Add(fdes,0,0)
-        firstleftSizer.Add(fmethodLabel,0,0)
-        firstleftSizer.Add(fmethod,0,0)
+
+        if fenlei == 1:
+            firstleftSizer.Add(fmethodLabel,0,0)
+            firstleftSizer.Add(fmethod,0,0)
         firstleftSizer.Add(fpassButton,0,0)
         firstleftSizer.AddGrowableCol(0,0)
         firstleftSizer.AddGrowableCol(1,1)
@@ -87,7 +121,9 @@ class TestFrame(wx.Frame):
         firstleftSizer.AddGrowableCol(3,1)
         firstleftSizer.AddGrowableRow(0,0)
         firstleftSizer.AddGrowableRow(1,0)
-        firstleftSizer.AddGrowableRow(2,0)
+
+        if fenlei == 1:
+            firstleftSizer.AddGrowableRow(2,0)
         firstSizer.Add(firstleftSizer,0,0,5)
         firstSizer.Add(grid,1,0,5)
         mainSizer.Add(firstSizer,0,0,5)
@@ -123,6 +159,9 @@ class TestFrame(wx.Frame):
         panel.SetSizer(mainSizer)
         mainSizer.Fit(self)
 
+        import loggerfun
+        loggerfun.fun1()
+
     def OnFpass(self,event):
         dialog = wx.TextEntryDialog(None,
                                     u'输入您的密码保护：',                                
@@ -154,8 +193,12 @@ class TestFrame(wx.Frame):
     def OnView(self,event):
         Subframe = draw_Dayline.DrawFrame()
         Subframe.Show()
-        
-'''if __name__ == '__main__':
+
+'''
+if __name__ == '__main__':
     app = wx.PySimpleApp()
     TestFrame().Show()
-    app.MainLoop()'''
+    app.MainLoop()
+
+'''
+

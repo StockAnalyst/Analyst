@@ -52,6 +52,7 @@ class MyDialogover ( wx.Dialog ):
 	# Virtual event handlers, overide them in your derived class
 	def Onclose( self, event ):
 		self.Destroy()
+		#self.Close()
 	
 if __name__ == '__main__':
 	#app = wx.PySimpleApp()

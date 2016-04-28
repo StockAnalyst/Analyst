@@ -1,31 +1,118 @@
-#-*- coding:UTF-8 -*-
-#FILE:å„ç§ç¤ºä¾‹æ•°æ®
+#!/usr/bin/env python
+#-*- coding:gbk -*-
+#FILE:µ±Ç°°æ±¾Êµ¼ÊÓÃµÄ¸÷ÖÖÊ¾ÀýÊý¾Ý
+
+import wx
+import MySQLdb
+
+db = MySQLdb.connect(host="localhost",port=3306,user="root",passwd="root",db="db_mkt",charset="utf8")
+cursor = db.cursor()
 
 #some example datas for treectrl
-tree = ["FIRST",
-		"SECOND",
-		["THIRD",[
-		"THIRD_ONE",
-		"THIRD_TWO"]]]
+cursor.execute("""SELECT name FROM tb_jszb WHERE type=%s""",u"´óÊÆÐÍ")
+item = cursor.fetchall()
+list1 = []
+for item1 in item:
+    #Í¨¹ý×ªÂëÀ´½â¾ö±àÂëµÄ´íÎóÎÊÌâ
+    list1.append(item1[0].encode('gbk'))
 
+tree = [["¼¼ÊõÖ¸±ê¹«Ê½",
+              [['´óÊÆÐÍ',
+                             list1],
+               ['³¬Âò³¬ÂòÐÍ',
+                             ['CCI']],
+               ['Ç÷ÊÆÐÍ',
+                             ['CHO']],
+               ['ÄÜÁ¿ÐÍ',
+                             ['BRAR']],
+               ['³É½»Á¿ÐÍ',
+                             ['AMO']],
+               ['¾ùÏßÐÍ',
+                             ['MA']],
+               ['Í¼±íÐÍ',
+                             ['ZX']],
+               ['Â·¾¶ÐÍ',
+                             ['BOLL']],
+               'Í£ËðÐÍ',
+               ['²ßÂÔÐÍ',
+                             ['MAcl']],
+               ['ÉñÏµ',
+                             ['SG-XDT']],
+               ['ÁúÏµ',
+                             ['RAD']],
+               ['¹íÏµ',
+                             ['CYC']],
+               ['ÆäËûÏµ',
+                             ['XT']],
+               ['ÌØÉ«ÐÍ',
+                             ['CPBS']],
+               'ÆäËûÀàÐÍ']],
+	 ["Ìõ¼þÑ¡¹É¹«Ê½",
+               [['Ö¸±êÌõ¼þÑ¡¹É',
+                             ['ASRD']],
+                ['»ù±¾ÃæÑ¡¹É',
+                             ['A001']],
+                ['¼´Ê±ÅÌÖÐÑ¡¹É',
+                             ['B003']],
+                ['×ßÊÆÐÎÊ½Ñ¡¹É',
+                             ['UPN']],
+                ['ÐÎÌ¬ÌØÕ÷Ñ¡¹É',
+                            ['MSTAR']],
+                'ÆäËûÀàÐÍ']],
+         ["×¨¼ÒÏµÍ³¹«Ê½",
+                ['BIAS']],
+         ["Îå²ÊKÏß¹«Ê½",
+                ['KSTAR1','KSTAR2']]
+      ]
+'''
 
-#some example datas for grid in æ¨¡å¼ç®¡ç†å™¨
-column1 = [u'MACDåŸºæœ¬',u'DDEå†³ç­–',u'SUPå†³ç­–',u'èµ„é‡‘å†³ç­–']
-column2 = [u'å‘¨æœŸï¼šæœªç»‘å®š ä¸»ï¼šMA å‰¯ï¼šVOL-TDX,MACD...',
-           u'å‘¨æœŸï¼šæœªç»‘å®š ä¸»ï¼šMA å‰¯ï¼šVOL-TDX,DDX,DDY,DDZ...',
-           u'å‘¨æœŸï¼šæœªç»‘å®š ä¸»ï¼šMA å‰¯ï¼šVOL-TDX,SUPL,SUPV...',
-           u'å‘¨æœŸï¼šæœªç»‘å®š ä¸»ï¼šMA å‰¯ï¼šVOL-TDX,ZJLX,ZJQDL...']
+tree = [
+	 [u"Ìõ¼þÑ¡¹É¹«Ê½",
+               [[u'Ö¸±êÌõ¼þÑ¡¹É',
+                             ['ASRD']],
+                [u'»ù±¾ÃæÑ¡¹É',
+                             ['A001']],
+                [u'¼´Ê±ÅÌÖÐÑ¡¹É',
+                             ['B003']],
+                [u'×ßÊÆÐÎÊ½Ñ¡¹É',
+                             ['UPN']],
+                [u'ÐÎÌ¬ÌØÕ÷Ñ¡¹É',
+                            ['MSTAR']],
+                u'ÆäËûÀàÐÍ']],
+         [u"×¨¼ÒÏµÍ³¹«Ê½",
+                ['BIAS']],
+         [u"Îå²ÊKÏß¹«Ê½",
+                ['KSTAR1','KSTAR2']]
+      ]
+'''
+#some example datas for grid in Ä£Ê½¹ÜÀíÆ÷
+column1 = [u'MACD»ù±¾',u'DDE¾ö²ß',u'SUP¾ö²ß',u'×Ê½ð¾ö²ß']
+column2 = [u'ÖÜÆÚ£ºÎ´°ó¶¨ Ö÷£ºMA ¸±£ºVOL-TDX,MACD...',
+           u'ÖÜÆÚ£ºÎ´°ó¶¨ Ö÷£ºMA ¸±£ºVOL-TDX,DDX,DDY,DDZ...',
+           u'ÖÜÆÚ£ºÎ´°ó¶¨ Ö÷£ºMA ¸±£ºVOL-TDX,SUPL,SUPV...',
+           u'ÖÜÆÚ£ºÎ´°ó¶¨ Ö÷£ºMA ¸±£ºVOL-TDX,ZJLX,ZJQDL...']
 
-#some example datas in å…¬å¼ç¼–è¾‘å™¨
-typeList=[u'å¤§åŠ¿åž‹',u'è¶…ä¹°è¶…ä¹°åž‹',u'è¶‹åŠ¿åž‹',u'èƒ½é‡åž‹',u'æˆäº¤é‡åž‹',u'å‡çº¿åž‹',u'å›¾è¡¨åž‹',u'è·¯å¾„åž‹',
-          u'åœæŸåž‹',u'ç­–ç•¥åž‹',u'ç¥žç³»',u'é¾™ç³»',u'é¬¼ç³»',u'å…¶ä»–ç³»',u'ç‰¹è‰²åž‹',u'å…¶ä»–ç±»åž‹']
+#some example datas in ¹«Ê½±à¼­Æ÷
+typeList=[u'´óÊÆÐÍ',u'³¬Âò³¬ÂòÐÍ',u'Ç÷ÊÆÐÍ',u'ÄÜÁ¿ÐÍ',u'³É½»Á¿ÐÍ',u'¾ùÏßÐÍ',u'Í¼±íÐÍ',u'Â·¾¶ÐÍ',
+          u'Í£ËðÐÍ',u'²ßÂÔÐÍ',u'ÉñÏµ',u'ÁúÏµ',u'¹íÏµ',u'ÆäËûÏµ',u'ÌØÉ«ÐÍ',u'ÆäËûÀàÐÍ']
 
-methodList=[u'å‰¯å›¾',u'ä¸»å›¾å åŠ ',u'å‰¯å›¾ï¼ˆå åŠ Kçº¿ï¼‰',u'å‰¯å›¾ï¼ˆå åŠ ç¾Žå›½çº¿ï¼‰',u'å‰¯å›¾ï¼ˆå åŠ æ”¶ç›˜ç«™çº¿ï¼‰',u'ä¸»å›¾æ›¿æ¢']
+methodList=[u'¸±Í¼',u'Ö÷Í¼µþ¼Ó',u'¸±Í¼£¨µþ¼ÓKÏß£©',u'¸±Í¼£¨µþ¼ÓÃÀ¹úÏß£©',u'¸±Í¼£¨µþ¼ÓÊÕÅÌÕ¾Ïß£©',u'Ö÷Í¼Ìæ»»']
 
-outputList=[u'åŠ¨æ€ç¿»è¯‘',u'æµ‹è¯•ç»“æžœ',u'å‚æ•°ç²¾çµ',u'ç”¨æ³•æ³¨é‡Š']
+typeList1=[u'Ö¸±êÌõ¼þÑ¡¹É',u'»ù±¾ÃæÑ¡¹É',u'¼´Ê±ÅÌÖÐÑ¡¹É',u'×ßÊÆÐÎÊ½Ñ¡¹É',u'ÐÎÌ¬ÌØÕ÷Ñ¡¹É',u'ÆäËûÀàÐÍ']
 
+outputList=[u'¶¯Ì¬·­Òë',u'²âÊÔ½á¹û',u'²ÎÊý¾«Áé',u'ÓÃ·¨×¢ÊÍ']
 
-            
+leaveListFinal = [[] for i in range(4)]
+tb_name = ['tb_jszb','tb_tjxg','tb_zjxt','tb_wckx']
+for i in range(4):
+    cursor.execute("""SELECT name FROM """ + tb_name[i] + """ WHERE 1""")
+    leaveList = cursor.fetchall()
+    for leaveone in leaveList:
+        leaveListFinal[i].append(leaveone[0])
+    #print leaveListFinal[i]
 
-            
-        
+sidafenlei = [u"¼¼ÊõÖ¸±ê¹«Ê½",u"Ìõ¼þÑ¡¹É¹«Ê½",u"×¨¼ÒÏµÍ³¹«Ê½",u"Îå²ÊKÏß¹«Ê½"]
+
+#¶Ï¿ªÁ¬½Ó
+#cursor.close()
+#db.close()
