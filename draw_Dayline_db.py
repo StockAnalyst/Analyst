@@ -1,8 +1,13 @@
 #-*- coding:UTF-8 -*-
 #!/usr/bin/env python
 #FILE:画图的连接数据库取数据
-
-
+import wx
+import draw_Dayline
+app = wx.App()
+frame1 = draw_Dayline.DrawFrame('000001')
+frame1.Show()
+app.MainLoop()
+'''
 import wx
 import MySQLdb
 
@@ -43,3 +48,4 @@ for daylineData in allDaylineData:
     #只取一年的数据（还是取所有的数据？由于现在图是可以调整的）
     if (len(x) >= 365):
         break
+'''

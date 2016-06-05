@@ -62,4 +62,47 @@ def getwss():
 	fm_wss.insert(0,'uploadtime',nowtime)
 	fm_wss.to_sql("wind_wssdata",engine,if_exists="append")
 
-getwss()
+#getwss()
+
+tradeDate = '20160510'
+data1 = w.wss("000001.SZ","pct_chg_per","tradeDate=20160510")
+data2 = w.wss("000001.SZ","pct_chg_per","tradeDate="+tradeDate)
+data3 = w.wss("000001.SZ","pct_chg_per","tradeDate=%s"%(tradeDate))
+
+print data1
+print data2
+print data3
+
+field = "rt_low_limit"
+data4 = w.wsq("000001.SZ","rt_pct_chg,%s"%(field))
+print data4
+
+def ResumeTradeDown(code): #复牌补跌和一字跌停
+    fields = "maxupordown,pct_chg,turn,open,close,HIGH"
+    lasttradeday = Lasttradeday()
+    lasttradedate = lasttradeday.date()
+    print lasttradedate
+    tradeday = ["tradeDate=2016-05-13"]   # 如何将交易时间为最新?
+
+    #tradeday = [ "tradeDate = lasttradedate"]
+    data = w.wss(code, fields,tradeday)
+    data = w.wss(code, fields,"tradeDate=2016-05-10")
+    data1 = w.wss(code,fields)
+    print data1
+    df = DataFrame(data.Data,index=data.Fields,columns=data.Codes).T
+    print df.head()
+def Lasttradeday():
+    data = w.tdays("")
+    tday = data.Data[0]
+    Lasttradeday = tday[-1]
+    def Lasttradeday():
+    data = w.tdays("")
+    tday = data.Data[0]
+    Lasttradeday = tday[-1]
+   
+def Lasttradeday():
+    data = w.tdays("")
+    tday = data.Data[0]
+    Lasttradeday = tday[-1]
+    #print Lasttradeday
+    return Lasttradeday

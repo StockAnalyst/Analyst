@@ -26,7 +26,7 @@ def drawhist(code):
     #我的数据库结构是data数据库下面有一个his_data的表，存着一只股票的所有历史数据
     
     cur.execute("""select date,ma5,ma10,ma20,volume,v_ma5,v_ma10,v_ma20
-            from tb_his where code=%s
+            from mkt_his where code=%s
             """,(code))
 
 

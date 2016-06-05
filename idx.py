@@ -4,10 +4,10 @@ from sqlalchemy import create_engine
 import tushare as ts
 import time
 nowtime = time.strftime('%Y-%m-%d %H:%M:%S')
-engine = create_engine('mysql://root:root@127.0.0.1/db_idx?charset=utf8')
+engine = create_engine('mysql://root:root@127.0.0.1/db_mkt?charset=utf8')
 import MySQLdb
 # 打开数据库连接
-db = MySQLdb.connect("127.0.0.1","root","root","db_idx" )
+db = MySQLdb.connect("127.0.0.1","root","root","db_mkt" )
 # 使用cursor()方法获取操作游标 
 cursor = db.cursor()
 fd = ts.Idx()

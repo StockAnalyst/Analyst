@@ -121,10 +121,11 @@ def realtimetick(code):
 				drop table temp_id
 		"""
 	cursor.execute(sql)
-	sql = """
+	'''sql = """
 				delete from mkt_tickrealtime where time>'15:10:00'
 		"""
-	cursor.execute(sql)
+	cursor.execute(sql)'''
+#realtimetick(['sh','sz','hs300','sz50','zxb','cyb'])
 #获取实时指数：
 
 #上证指数

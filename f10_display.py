@@ -9,14 +9,15 @@ db =MySQLdb.connect(host="localhost",port=3306,user="root",passwd="root",db="db_
 cursor = db.cursor() 
 
 class TestFrame1(wx.Frame):
-    def __init__(self):
+    def __init__(self,code):
         wx.Frame.__init__(self,None,-1,u'个股资料 F10',size=(600,400))
         panel = wx.Panel(self)
-        
+        self.code = code
     #1.设置所有的窗口
         #第一部分是两个textctrl和十六个button
         fname = wx.TextCtrl(panel,-1,u'股票名称',pos=(15,15))
-        fcode = wx.TextCtrl(panel,-1,u'SZ000001',pos=(15,45))
+        #fcode = wx.TextCtrl(panel,-1,u'SZ000001',pos=(15,45))
+        fcode = wx.TextCtrl(panel,-1,'SZ%s'%self.code,pos=(15,45))
 
         Button001 = wx.Button(panel,-1,u'操盘必读')
         self.Bind(wx.EVT_BUTTON,self.On001,Button001)
@@ -71,7 +72,7 @@ class TestFrame1(wx.Frame):
         #第二部分是多行文本框(通过设置为self....说明其作用域是全局的)
         self.fmultitext = wx.TextCtrl(panel,-1,style=wx.TE_MULTILINE,pos=(15,100),size=(570,300))
 
-        One = cursor.execute("""SELECT loc FROM tb_001 WHERE code=%s AND attr=%s""",("000001","SZ"))
+        One = cursor.execute("""SELECT loc FROM tb_001 WHERE code=%s AND attr=%s""",(self.code,"SZ"))
         if One==0:
             pass
         else:

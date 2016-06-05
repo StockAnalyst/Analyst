@@ -18,4 +18,4 @@ def upmktall():
 
 	mkt.mktindex(todaydate)
 #mkt.mktequd(todaydate)
-mkt.mktbondd('20160406')
+#mkt.mktbondd('20160406')

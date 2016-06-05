@@ -196,7 +196,7 @@ def mktindex(update):
 		if(timecheck.compare_hourmin(now_hm,end_hm_a,start_hm_p)):
 			notrealdatanoon()
 		#开市时间
-		elif(timecheck.compare_hourmin(now_hm,start_hm_a,end_hm_a) and timecheck.compare_hourmin(now_hm,start_hm_p,end_hm_p)):
+		elif(timecheck.compare_hourmin(now_hm,start_hm_a,end_hm_a) or timecheck.compare_hourmin(now_hm,start_hm_p,end_hm_p)):
 			realdata()
 		#晚上停市时间
 		#if(int(now_hm) > int(end_hm_p)):
